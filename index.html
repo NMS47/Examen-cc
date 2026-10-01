@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Examen de Práctica CCOP</title>
+<style>
+:root{
+  --bg:#f4f5f2; --card:#ffffff; --ink:#1d2320; --muted:#5d6661; --line:#d9ddd8;
+  --accent:#2f5d50; --accent-ink:#ffffff; --ok:#1f7a45; --ok-bg:#e3f4e9; --bad:#b3261e; --bad-bg:#fbe7e5;
+  --warn:#8a5a00; --warn-bg:#fff4dc; --sel:#e6efec;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121614; --card:#1b201e; --ink:#e7ebe8; --muted:#a3aca7; --line:#2e3532;
+    --accent:#6fb39e; --accent-ink:#0d1210; --ok:#5cc98a; --ok-bg:#16301f; --bad:#ff8a80; --bad-bg:#3a1a18;
+    --warn:#f2c46b; --warn-bg:#33280f; --sel:#24302c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121614; --card:#1b201e; --ink:#e7ebe8; --muted:#a3aca7; --line:#2e3532;
+  --accent:#6fb39e; --accent-ink:#0d1210; --ok:#5cc98a; --ok-bg:#16301f; --bad:#ff8a80; --bad-bg:#3a1a18;
+  --warn:#f2c46b; --warn-bg:#33280f; --sel:#24302c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:820px;margin:0 auto;padding:24px 16px 120px}
+header h1{margin:0 0 4px;font-size:1.6rem}
+header p{margin:0 0 4px;color:var(--muted);font-size:.95rem}
+.biblio{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:16px 0;font-size:.9rem;color:var(--muted)}
+.biblio b{color:var(--ink)}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.prog{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.count{font-variant-numeric:tabular-nums;font-size:.9rem;color:var(--muted);white-space:nowrap}
+.q{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:0 0 14px}
+.q .meta{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--muted);margin-bottom:6px}
+.q .txt{font-weight:600;margin:0 0 10px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:8px;margin:6px 0;cursor:pointer}
+.opt:hover{background:var(--sel)}
+.opt input{margin-top:4px;accent-color:var(--accent)}
+.opt .l{font-weight:700;min-width:1.2em}
+.opt.chosen{background:var(--sel);border-color:var(--accent)}
+.done .opt{cursor:default}
+.done .opt:hover{background:transparent}
+.opt.right{background:var(--ok-bg);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.q.is-ok{border-left:5px solid var(--ok)}
+.q.is-bad{border-left:5px solid var(--bad)}
+.q.is-blank{border-left:5px solid var(--warn)}
+.fb{display:none;margin-top:10px;padding:10px 12px;border-radius:8px;font-size:.92rem}
+.done .fb{display:block}
+.is-ok .fb{background:var(--ok-bg)}
+.is-bad .fb{background:var(--bad-bg)}
+.is-blank .fb{background:var(--warn-bg)}
+.fb b{display:block;margin-bottom:2px}
+.btn{appearance:none;border:0;border-radius:8px;padding:12px 18px;font:inherit;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.notice{display:none;background:var(--warn-bg);color:var(--ink);border:1px solid var(--warn);border-radius:10px;padding:12px 16px;margin:12px 0}
+.notice.show{display:block}
+.result{display:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:0 0 16px}
+.result.show{display:block}
+.score{font-size:2.2rem;font-weight:800;margin:0}
+.result .stats{color:var(--muted);margin:4px 0 12px}
+.hide{display:none!important}
+.foot{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px}
+.foot .in{max-width:820px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Examen de Práctica – Curso de Buceo con Circuito Cerrado</h1>
+    <p>100 preguntas de opción múltiple. Respondé todas y presioná <b>Finalizar</b> para ver la corrección.</p>
+  </header>
+  <div class="biblio">
+    <b>Bibliografía:</b> ROP 64-01 “La Compañía de Buzos de Ejército” (2008), Cap I, II, III, V, VI, VII, VIII y XII ·
+    RFP 64-01 “Instrucción de Buceo” (2001), Cap II, III, IV, V y VIII · Tablas U.S. Navy Rev 7 Change A (2016).
+    El orden de preguntas y opciones cambia en cada intento.
+  </div>
+
+  <div class="result" id="result">
+    <p class="score" id="score"></p>
+    <p class="stats" id="stats"></p>
+    <div class="actions">
+      <button class="btn ghost" id="onlyBad">Ver solo incorrectas</button>
+      <button class="btn" id="retry">Nuevo intento</button>
+    </div>
+  </div>
+
+  <div class="bar"><div class="prog"><i id="progbar"></i></div><span class="count" id="count">0 / 100</span></div>
+
+  <div id="quiz"></div>
+
+  <div class="notice" id="notice">
+    <span id="noticeTxt"></span>
+    <div class="actions">
+      <button class="btn" id="forceFinish">Finalizar igual</button>
+      <button class="btn ghost" id="keepGoing">Seguir respondiendo</button>
+    </div>
+  </div>
+</div>
+
+<div class="foot"><div class="in">
+  <span class="count" id="count2">0 / 100 respondidas</span>
+  <button class="btn" id="finish">Finalizar</button>
+</div></div>
+
+<script>
+const R = "ROP 64-01", F = "RFP 64-01", N = "U.S. Navy Rev 7";
+const QUESTIONS = [
+/* ===== Preguntas del examen real (20) ===== */
+{s:F+" · Cap II",q:"Según la física aplicada al buceo, si un buceador desciende desde la superficie hasta los 30 metros de profundidad (equivalente a 4 atmósferas absolutas o ATA), ¿qué sucede con el volumen de un espacio gaseoso flexible dentro de su equipo, asumiendo una temperatura constante?",
+ o:["Se reduce a la mitad (1/2) de su volumen inicial.","Se cuadriplica su volumen inicial.","Se reduce a un cuarto (1/4) de su volumen inicial.","Permanece constante debido a la compensación automática del medio."],a:2,
+ e:"Ley de Boyle-Mariotte: P × V = constante. A 30 m la presión absoluta es 1 + 30/10 = 4 ATA, por lo que el volumen queda en 1/4 (25 %)."},
+{s:F+" · Cap II",q:"¿Qué establece específicamente la Ley de Dalton en relación con la mezcla de gases que respira un buceador bajo el agua?",
+ o:["La presión total de una mezcla de gases es igual a la suma de las presiones parciales de cada gas que la compone.","El volumen de un gas es inversamente proporcional a la presión absoluta ejercida sobre él.","La cantidad de gas disuelto en un líquido es directamente proporcional a la presión parcial del gas.","La densidad del gas disminuye de forma lineal a medida que el buceador desciende en profundidad."],a:0,
+ e:"Dalton: cada gas ejerce su presión parcial como si ocupara solo el volumen de la mezcla; la suma de las parciales da la presión total. La opción B es Boyle y la C es Henry."},
+{s:F+" · Cap IV",q:"Durante el descenso en una inmersión, ¿qué maniobra fisiológica elemental debe realizar el buceador de forma oportuna para evitar el barotrauma de oído medio?",
+ o:["Hiperventilación controlada previa en superficie.","Inspiración profunda manteniendo la glotis cerrada firmemente.","Maniobra de Valsalva (espiración suave con la nariz tapada y la boca cerrada).","Ascenso inmediato de un metro para liberar la presión acumulada."],a:2,
+ e:"Las maniobras de compensación (Valsalva, Toynbee, divulsión) abren las trompas de Eustaquio y equilibran la presión a ambos lados del tímpano. Hay que compensar antes de que aparezca el dolor."},
+{s:F+" · Cap IV",q:"¿A qué profundidad aproximada y debido a qué factor del aire comprimido comienza a manifestarse habitualmente la narcosis por nitrógeno (efecto narcótico o \"borrachera de las profundidades\")?",
+ o:["A partir de los 10 metros, debido a la toxicidad aguda del oxígeno hiperbárico.","A partir de los 30 metros, debido al incremento de la presión parcial del nitrógeno.","A partir de los 50 metros, causado exclusivamente por la acumulación de dióxido de carbono.","A nivel de superficie, si el buceador padece fatiga física o estrés crónico."],a:1,
+ e:"La causa es el aumento de la presión parcial de N₂, que actúa como un gas anestésico. Ojo: el RFP ubica el cuadro generalmente entre 35 y 60 m, pero de las opciones la correcta es la B."},
+{s:F+" · Cap III",q:"¿Cuál es la función operativa principal de la segunda etapa de un regulador de buceo autónomo?",
+ o:["Reducir la presión del cilindro directamente a la presión atmosférica constante.","Medir la temperatura del agua para dosificar automáticamente el caudal de oxígeno.","Almacenar una reserva de gas de emergencia en caso de fallo del chaleco hidrostático.","Reducir la presión intermedia entregada por la primera etapa a la presión ambiental requerida por el buceador en el momento de la inhalación."],a:3,
+ e:"La 1ra etapa reduce la presión del tanque a una presión intermedia; la 2da etapa (válvula pulmoautomática, a la demanda) la lleva a la presión ambiente cuando el buzo inspira."},
+{s:F+" · Cap III",q:"En relación con las exigencias de seguridad operacional del chaleco compensador (BCD), ¿cuál de las siguientes verificaciones es indispensable realizar antes de ingresar al agua?",
+ o:["Comprobar el correcto funcionamiento de las válvulas de sobrepresión/alivio y el inflador oral/automático.","Llenarlo completamente en la superficie para asegurar una flotabilidad positiva máxima permanente.","Desconectar la manguera de baja presión para prevenir cualquier inflado accidental.","Saturar y lastrar la vejiga interna con plomo macizo para compensar fallas del arnés."],a:0,
+ e:"El chaleco tiene válvula de sobrepresión (tarada ~50 g/cm² sobre la ambiente) y varios sistemas de inflado (oral, desde la baja presión del regulador, etc.). Deben verificarse antes de entrar al agua."},
+{s:F+" · Procedimientos",q:"De acuerdo con los procedimientos estándares del manual para operaciones en el agua, ¿cómo se define y conforma operativamente el binomio de buceo?",
+ o:["Un buceador principal y un asistente en superficie unidos por un cabo rígido de señalización.","Tres buceadores independientes que operan en sectores separados para maximizar la cobertura.","Dos buceadores que permanecen juntos, vigilándose y prestándose asistencia mutua durante toda la inmersión.","Un solo buceador experimentado que efectúa la tarea mientras el jefe de buceo lo vigila mediante cámaras."],a:2,
+ e:"Binomio = pareja de buceo: dos buzos que permanecen juntos y se asisten mutuamente durante toda la inmersión."},
+{s:F+" · Cap V",q:"¿Qué parámetros operacionales fundamentales se deben calcular y confrontar obligatoriamente antes de planificar una inmersión con aire comprimido para prevenir descompresión inadecuada?",
+ o:["El peso exacto del equipo completo fuera del agua y la temperatura superficial.","La profundidad máxima prevista y el tiempo máximo de fondo admisible según las tablas de descompresión.","La cantidad de lastre necesario para lograr flotabilidad neutra en agua dulce únicamente.","El caudal volumétrico del regulador de repuesto a nivel del mar."],a:1,
+ e:"Todo programa de descompresión se selecciona por la combinación “profundidad del buceo” y “tiempo en el fondo”."},
+{s:F+" · Cap IV",q:"¿Cuál es el mecanismo fisiopatológico directo que desencadena la Enfermedad Descompresiva (ED) en un buceador tras el ascenso?",
+ o:["La contracción súbita de los alvéolos pulmonares por falta de oxígeno metabólico.","El consumo total del gas del tubo que produce un cuadro de hipoxia severa en el sistema nervioso.","La liberación y formación de burbujas de gas inerte (nitrógeno) en la sangre y los tejidos debido a una disminución abrupta de la presión ambiente.","La entrada directa de agua salada al torrente sanguíneo a través de los senos paranasales."],a:2,
+ e:"Ley de Henry: el N₂ disuelto bajo presión, si la presión baja demasiado rápido, sale de solución formando burbujas (desgasificación bifásica), como al destapar una gaseosa."},
+{s:F+" · Cap IV",q:"Ante la sospecha fundada de un accidente de buceo grave (como embolia gaseosa o enfermedad descompresiva severa), ¿cuál es una de las primeras medidas inmediatas de primeros auxilios en el sitio del suceso?",
+ o:["Administrar oxígeno normobárico al 100% con máscara de alto flujo y mantener al paciente en reposo horizontal.","Sumergir nuevamente al accidentado a poca profundidad para redisolución forzada del gas.","Administrar grandes cantidades de líquidos por vía oral de manera forzada y rápida.","Realizar maniobras de RCP con compresiones torácicas vigorosas preventivas a pesar de presentar pulso normal."],a:0,
+ e:"Oxígeno al 100 % y paciente acostado, mientras se gestiona la recompresión en cámara. Nunca recomprimir en el agua ni hacer RCP con pulso presente."},
+{s:R+" · Cap I",q:"Con respecto a las misiones del Instrumento Militar Terrestre, ¿cuál es la magnitud orgánica fija que tiene el elemento de Buzos de Ejército cuando integra el Batallón de Ingenieros Anfibios?",
+ o:["Magnitud de Grupo o Equipo.","Magnitud de Sección de apoyo.","Magnitud de Subunidad (Compañía)."],a:2,
+ e:"Art 1.005 b: integrarán el batallón de ingenieros anfibios con magnitud de subunidad. Art 1.010: el elemento tendrá magnitud de subunidad (compañía)."},
+{s:R+" · Cap II",q:"En una operación ofensiva a través de un gran curso de agua, ¿cuáles son las tareas específicas de movilidad que ejecutan los elementos de Buzos de Ejército para apoyar el ataque?",
+ o:["Abastecimiento de raciones Clase I y armado de botes neumáticos de circunstancia.","Reconocimiento, jalonamiento de playas, aperturas de brechas y demoliciones específicas.","Relevamientos exclusivamente meteorológicos y establecimiento de la base de operaciones."],a:1,
+ e:"Art 2.004: reconocimientos, demarcación y jalonamiento de orillas, playas y cursos de agua, aperturas de brechas y demoliciones específicas para la conquista de cabezas de puente o playa."},
+{s:R+" · Cap II",q:"Las operaciones tácticas de los Buzos de Ejército exigen condiciones muy rigurosas. ¿En qué momento del día y bajo qué condiciones meteorológicas se llevarán a cabo preferentemente para asegurar el éxito?",
+ o:["De día, con óptima visibilidad y aguas calmas para facilitar el guiado.","Preferentemente de noche y en condiciones meteorológicas adversas para facilitar el secreto y la sorpresa.","En los crepúsculos matutinos, con total ausencia de viento o corrientes."],a:1,
+ e:"Art 2.001 e: se llevarán a cabo preferentemente de noche, en condiciones meteorológicas adversas, facilitando el secreto, la seguridad y la sorpresa."},
+{s:R+" · Cap III",q:"Durante la conquista de la primera orilla, ¿cuál es la misión trascendente que ejecutan los Buzos de Ejército en coordinación con tropas de asalto aéreo o de exploración?",
+ o:["La instalación de cortinas de burbujas en afluentes secundarios.","La conquista anticipada y remoción de demoliciones en puentes intactos.","El jalonamiento de líneas de defensa pasiva en la costa propia."],a:1,
+ e:"Art 3.003: el empleo previo de TOE y buzos será trascendente para la conquista anticipada de puentes intactos, removiendo expeditivamente las demoliciones preparadas por el enemigo."},
+{s:R+" · Cap V",q:"El escalón reconocimiento es el encargado de la acción principal. ¿Qué escalón tiene la tarea impuesta de brindar alerta temprana y \"aislar el objetivo\" mediante el uso de minas y trampas explosivas?",
+ o:["Escalón apoyo.","Escalón seguridad.","Escalón recibimiento."],a:1,
+ e:"Art 5.004 c: el escalón seguridad “aislará el objetivo”, brindará alerta temprana y sus sectores se refuerzan con minas y trampas explosivas."},
+{s:R+" · Cap VI",q:"Al planificar una aproximación por agua donde la distancia al objetivo es muy amplia, esta fase se divide en lejana y cercana. ¿Qué medios sigilosos se especifican para ejecutar la aproximación cercana?",
+ o:["Embarcaciones mayores de gran envergadura a velocidad moderada.","Movimientos sigilosos en kayak, natación por o bajo superficie.","Botes neumáticos con motores fuera de borda a máxima potencia."],a:1,
+ e:"Art 6.003 b 1) b): la aproximación cercana incide sobre el objetivo con movimientos sigilosos en kayak, natación por o bajo superficie."},
+{s:R+" · Cap VI",q:"Según la tabla de rendimiento estimado, ¿cuál es el alcance máximo (en kilómetros y en un solo sentido) de una infiltración subacua utilizando un equipo autónomo de circuito cerrado?",
+ o:["1,5 kilómetros.","3 kilómetros.","10 kilómetros."],a:1,
+ e:"Figura 6: subacuo con equipo autónomo → 1,5 km circuito abierto y 3 km circuito cerrado. 10 km corresponde a natación de combate en superficie sin carga."},
+{s:R+" · Cap VII",q:"Dentro del planeamiento de un \"Golpe de Mano\", ¿cuáles son las condiciones hidrológicas y atmosféricas desfavorables que el manual destaca como oportunidades para facilitar la aproximación encubierta?",
+ o:["Aguas transparentes y noches de luna llena (vivas).","Neblina, tormentas, lluvias u oleajes intensos.","Corrientes ordinarias estables y ausencia total de viento."],a:1,
+ e:"Art 7.006 c 3): condiciones atmosféricas e hidrológicas desfavorables que faciliten la aproximación encubierta (neblina, tormentas, lluvias u oleajes intensos)."},
+{s:R+" · Cap VIII",q:"Al ejecutar un Bloqueo de Vías de Comunicación (BVC) sobre un río o canal, ¿qué procedimiento se debe emplear para obstaculizar de forma completa o parcial las vías de navegación del enemigo?",
+ o:["Establecer puestos observatorios camuflados en afluentes secundarios.","Minar las líneas de navegación, destruir obras de contención o hundir embarcaciones.","Instalar exclusivamente obstáculos de alambre de espino en las banquinas de la orilla."],a:1,
+ e:"Art 8.005 c 5): minando las líneas de navegación, vaciando aguas de diques, destruyendo obras de contención, hundiendo embarcaciones o utilizando las facilidades existentes."},
+{s:R+" · Cap XI",q:"Cuando se realiza una delimitación de la zona de rastreo para buscar materiales o personal bajo la superficie en zonas amplias, ¿qué dimensiones geométricas estandariza el manual para establecer el rectángulo de búsqueda?",
+ o:["Un cuadrado de 100 metros por 100 metros.","Un rectángulo de aproximadamente 150 metros por 50 metros.","Una faja longitudinal de 500 metros por 10 metros."],a:1,
+ e:"Cap XI (Búsqueda): se establece un rectángulo de aproximadamente 150 m × 50 m delimitado con cabos, boyas y muertos."},
+
+/* ===== ROP 64-01 ===== */
+{s:R+" · Cap I",q:"¿Cuál es la misión del elemento de buzos de Ejército?",
+ o:["Ejecutar operaciones de combate complementarias mediante procedimientos y técnicas particulares de los buzos, en el medio acuático y su zona terrestre de interés, para complementar la acción de los elementos del IMT.","Ejecutar exclusivamente tareas de salvamento y rescate en tiempo de paz en apoyo a la comunidad.","Conducir en forma independiente operaciones anfibias de nivel estratégico.","Brindar seguridad portuaria permanente al componente naval."],a:0,
+ e:"Art 1.006: ejecutar operaciones de combate complementarias en el medio acuático y su zona terrestre de interés, para complementar al IMT, crear condiciones favorables y limitar las del enemigo."},
+{s:R+" · Cap I",q:"¿Qué tareas concretan la función MOVILIDAD de los elementos de buzos de Ejército?",
+ o:["Cortes, desarmado, incendio, contaminación e inundaciones.","Apertura de brecha, remoción de obstáculos acuáticos, voladuras y remoción de demoliciones (especialmente subacuas).","Relevamientos hidrográficos, salvamento y apoyo a otros componentes.","Inteligencia técnica del material específico y reconocimientos anfibios."],a:1,
+ e:"Art 1.007 a. La opción A corresponde a contramovilidad y las opciones C y D a la función complementaria."},
+{s:R+" · Cap I",q:"¿Cuál de las siguientes NO figura entre las limitaciones del elemento de buzos de Ejército?",
+ o:["Simultaneidad de tareas.","Capacidad defensiva reducida.","Dificultad para ejecutar reemplazos de personal.","Imposibilidad de operar en ambientes marítimos."],a:3,
+ e:"Art 1.009: simultaneidad de tareas, necesidad de medios técnicos de apoyo, capacidad defensiva reducida, limitada potencia de fuego y dificultad de reemplazos. Operar en zonas marítimas es una capacidad (Art 1.008 d)."},
+{s:R+" · Cap I",q:"¿Sobre qué estructura se organiza la Compañía de Buzos de Ejército?",
+ o:["Tres secciones de buzos de asalto y una sección de apoyo de fuego.","Dos secciones de buzos de asalto, una sección de buzos de apoyo, una sección salvamento, un grupo comando y un grupo servicio.","Una sección de reconocimiento, una de demoliciones y una de embarcaciones.","Dos secciones de salvamento y una sección comando y servicios."],a:1,
+ e:"Art 1.010: dos secciones de buzos de asalto, una de buzos de apoyo, una sección salvamento, grupo comando de compañía y grupo servicio (estos pueden ser de nivel sección)."},
+{s:R+" · Cap I",q:"El jefe de la sección de buzos de apoyo tendrá, además, las responsabilidades inherentes a:",
+ o:["Oficial de personal (S-1).","Oficial de inteligencia (S-2).","Oficial de operaciones (S-3).","Oficial de materiales (S-4)."],a:1,
+ e:"Art 1.011 d: la sección de buzos de apoyo obtiene información y movilidad; su jefe es además S-2 de la subunidad. El jefe de la sección comando y servicios es S-4."},
+{s:R+" · Cap I",q:"Según el ROP, ¿cuál de los siguientes NO es uno de los empleos que ofrecen los espejos de agua?",
+ o:["Una avenida de aproximación o de repliegue.","Un obstáculo.","Una forma de enmascaramiento y encubrimiento.","Una zona de reunión logística permanente."],a:3,
+ e:"Art 1.001 b: avenida de aproximación o repliegue, obstáculo, forma de enmascaramiento y encubrimiento, y fuente de información y recursos."},
+{s:R+" · Cap II",q:"Generalmente, las operaciones ejecutadas por los buzos de Ejército serán:",
+ o:["De largo alcance y de carácter defensivo.","De corto alcance (operaciones cercanas), de carácter ofensivo, en su mayor parte operaciones de combate complementarias.","De carácter estratégico, con efectivos de gran magnitud.","Exclusivamente de tiempo de paz."],a:1,
+ e:"Art 2.001 a. Además serán ejecutadas por efectivos de reducida magnitud (Art 2.001 d)."},
+{s:R+" · Cap II",q:"¿Cuál de las siguientes NO figura entre las operaciones que ejecutarán los elementos de buzos de Ejército (Art 2.002)?",
+ o:["Infiltración (exfiltración).","Interdicción.","Conexión.","Defensa en posición."],a:3,
+ e:"Art 2.002: infiltración, incursión, interdicción, exploración (reconocimiento anfibio), conexión, repliegue (evasión) y salvamento."},
+{s:R+" · Cap II",q:"¿Cuál es la ventaja principal que proporciona el empleo de los elementos de buzos de Ejército en apoyo a las operaciones de combate básicas?",
+ o:["Su gran potencia de fuego orgánica.","Su habilidad para atacar puntos seleccionados de un sistema defensivo enemigo próximo a un espejo de agua.","Su capacidad para retener terreno por períodos prolongados.","Su independencia logística total."],a:1,
+ e:"Art 2.003 a."},
+{s:R+" · Cap II",q:"¿En qué ambiente geográfico el empleo de buzos se hace imprescindible por ser uno de los pocos medios de obtención de información sobre las vías navegables y sus condiciones?",
+ o:["Montaña y zonas frías.","Monte.","Malezal, bañados y abundantes cursos de agua.","Defensa de costas."],a:2,
+ e:"Art 2.009 c: tareas más comunes: reconocimiento de vados y lugares de franqueo, obstáculos, seguridad de franqueos y defensas contra el agua."},
+{s:R+" · Cap II",q:"En apoyo a las operaciones DEFENSIVAS, los buzos de Ejército podrán:",
+ o:["Efectuar bloqueos de vías de comunicación como parte de una interdicción, instalando obstáculos, minas, trampas y demoliciones, en especial cuando el enemigo ataca a través de cursos de agua.","Ejecutar solamente tareas de salvamento.","Conducir el franqueo táctico de la reserva.","Construir puentes fijos de gran envergadura."],a:0,
+ e:"Art 2.005: además contribuyen a la dinámica de la defensa con incursiones (golpes de mano y emboscadas)."},
+{s:R+" · Cap III",q:"¿Cuál es la característica distintiva y sobresaliente de los buzos de Ejército en las operaciones a través de un curso de agua?",
+ o:["Poder operar con exclusividad en el medio subacuo.","Contar con el mayor poder de fuego del batallón.","Ser los únicos capaces de construir puentes flotantes.","Operar exclusivamente de día."],a:0,
+ e:"Art 3.002."},
+{s:R+" · Cap III",q:"En las acciones previas al franqueo, de no contar los buzos de Ejército con suficiente efectivo, ¿quién toma a su cargo parte o la totalidad de esas tareas?",
+ o:["La compañía de infantería del escalón asalto.","Los grupos de reconocimiento anfibio de las secciones de reconocimiento de los batallones de ingenieros livianos y pesados.","La aviación de Ejército.","El componente naval."],a:1,
+ e:"Art 3.004."},
+{s:R+" · Cap III",q:"¿Qué beneficio principal brinda la conquista de puentes intactos durante la conquista de la primera orilla?",
+ o:["Permite prescindir del reconocimiento de la segunda orilla.","Economía de medios de franqueo, de esfuerzos para su puesta en operación o tendido y de tiempo.","Evita la necesidad de seguridad antitanque y antiaérea.","Permite replegar al defensor sin combate."],a:1,
+ e:"Art 3.003: además brinda la oportunidad de obtener un éxito importante en el lanzamiento del franqueo táctico."},
+{s:R+" · Cap V",q:"El reconocimiento anfibio se define como:",
+ o:["Una operación ofensiva para destruir instalaciones ribereñas.","Un procedimiento de obtención de información sobre los aspectos naturales y artificiales de los espejos de agua, su espacio terrestre de interés y las condiciones meteorológicas de una zona objetivo, para una operación futura.","La técnica para jalonar una playa para el desembarco.","La detección electrónica de submarinos y buzos enemigos."],a:1,
+ e:"Art 5.001."},
+{s:R+" · Cap V",q:"¿Cuáles son las dos formas de reconocimiento anfibio (que pueden combinarse)?",
+ o:["Exploración en flor y exploración en caja.","Relevamiento hidrográfico y reconocimientos de ingenieros.","Reconocimiento diurno y reconocimiento nocturno.","Reconocimiento por el fuego y reconocimiento en fuerza."],a:1,
+ e:"Art 5.003: relevamiento hidrográfico (en río/mar/lago y en playa) y reconocimientos de ingenieros (aspectos naturales y artificiales)."},
+{s:R+" · Cap V",q:"En el reconocimiento anfibio, ¿qué escalón permanece normalmente en el PRCO para asegurarlo y facilitar el repliegue, con misiones de guía y jalonamiento?",
+ o:["Escalón reconocimiento.","Escalón apoyo.","Escalón seguridad.","Escalón recibimiento."],a:3,
+ e:"Art 5.004 d."},
+{s:R+" · Cap V",q:"Respecto del escalón apoyo en el reconocimiento anfibio, es correcto afirmar que:",
+ o:["Ejecuta la acción principal de obtención de información.","Brinda apoyo de fuego directo al escalón reconocimiento y no abre fuego, excepto que peligre la misión o la integridad del elemento.","Aísla el objetivo mediante minas y trampas.","Permanece en el punto de reunión inicial."],a:1,
+ e:"Art 5.004 b."},
+{s:R+" · Cap V",q:"En un curso de agua, una corriente ORDINARIA (0,8 a 1,5 m/seg) indica la existencia de un lecho de:",
+ o:["Fondo pantanoso o fangoso.","Grava o arena.","Piedras, rocas o grava gruesa.","Arcilla compacta."],a:1,
+ e:"Art 5.006: débil (< 0,8 m/s) fangoso; ordinaria (0,8–1,5) grava o arena; rápida (1,5–2,5) o impetuosa (> 2,5) piedras, rocas o grava gruesa."},
+{s:R+" · Cap V",q:"¿Cuál es la limitación principal de la búsqueda de obstáculos a remolque o \"trineo\"?",
+ o:["Requiere mucho personal.","Exige delimitar siempre el sector de rastreo.","La detección del obstáculo es exclusivamente visual, por lo que requiere buena luz y visibilidad, atentando contra el encubrimiento.","Solo puede emplearse en fondos de arena."],a:2,
+ e:"Art 5.006 b 1) c) (3): requiere poco personal y no es imprescindible delimitar el sector."},
+{s:R+" · Cap V",q:"¿Cuál es el factor de éxito del informe de un reconocimiento anfibio?",
+ o:["La cantidad de fotografías adjuntas.","La oportunidad de su entrega.","Que sea siempre escrito.","Que lo entregue personalmente el jefe."],a:1,
+ e:"Art 5.007: el factor de éxito del informe será siempre la oportunidad de su entrega."},
+{s:R+" · Cap VI",q:"La infiltración acuática se define como:",
+ o:["Una operación complementaria por medio de la cual se coloca un elemento propio en territorio en poder del enemigo empleando el medio acuático, para la ejecución de otras operaciones o tareas.","Un ataque sorpresivo contra un enemigo estacionado.","La técnica para recoger buzos desde una embarcación.","El regreso de un elemento a territorio propio."],a:0,
+ e:"Art 6.001. El regreso es la exfiltración (Art 6.007)."},
+{s:R+" · Cap VI",q:"En general, las variantes de la infiltración acuática son:",
+ o:["Diurna y nocturna.","En cursos de agua (ribereña) y en litoral marítimo (anfibia).","Aérea y terrestre.","Lejana y cercana."],a:1,
+ e:"Art 6.002 c: además puede efectuarse por superficie o en forma subacuática, siendo factible su combinación."},
+{s:R+" · Cap VI",q:"La fase TRANSPORTE de la infiltración acuática consiste en un movimiento a bordo de una embarcación de apoyo de mediana o gran envergadura desde:",
+ o:["El PRCO hasta el objetivo.","El punto de reunión inicial (PRI) hasta un punto de reunión en el camino (PR).","La orilla hasta el punto base.","El punto de conexión hasta el PRI."],a:1,
+ e:"Art 6.003 a. La aproximación (fase crucial) se inicia desde el PR."},
+{s:R+" · Cap VI",q:"¿Cuál es la finalidad de la aproximación LEJANA?",
+ o:["Incidir directamente sobre el objetivo.","Evitar un desgaste físico prematuro, prevaleciendo los movimientos de navegación, lo más extensos posible.","Realizar el transbordo desde el submarino.","Jalonar la playa para el grueso."],a:1,
+ e:"Art 6.003 b 1) a)."},
+{s:R+" · Cap VI",q:"Según la tabla de rendimiento estimado, ¿cuál es el alcance máximo en un sentido de una infiltración subacua con equipo autónomo de CIRCUITO ABIERTO?",
+ o:["1,5 km.","3 km.","7 km.","10 km."],a:0,
+ e:"Figura 6: 1,5 km circuito abierto; 3 km circuito cerrado; 10 km natación de combate en superficie sin carga."},
+{s:R+" · Cap VI",q:"En la exfiltración por cursos de agua, el regreso deberá preverse:",
+ o:["Siempre contra la corriente para dificultar la persecución.","Aprovechando la corriente \"aguas abajo\", con el personal disperso en lo posible.","Exclusivamente en submarino.","Siempre por modo aéreo."],a:1,
+ e:"Art 6.007 a."},
+{s:R+" · Cap VI",q:"En el esquema de infiltración anfibia, ¿cuál es el límite de seguridad para el empleo de medios de gran envergadura?",
+ o:["500 m.","1000 m.","3000 m.","5000 m."],a:2,
+ e:"Figura 8: 3000 m para medios de gran envergadura; 500 m es el límite para la aproximación con motor fuera de borda."},
+{s:R+" · Cap VII",q:"La incursión es una operación:",
+ o:["Defensiva, para retener terreno clave.","De carácter ofensivo para cumplir un propósito específico dentro de la posición enemiga, sin intención de retener terreno.","De obtención de información exclusivamente.","De salvamento de material hundido."],a:1,
+ e:"Art 7.001. Sus procedimientos principales son el golpe de mano y la emboscada (Art 7.004)."},
+{s:R+" · Cap VII",q:"El golpe de mano se define como:",
+ o:["Un ataque sorpresivo desde una posición a cubierto contra un enemigo en movimiento.","Un ataque sorpresivo y violento que se ejecuta contra un enemigo estacionado o contra una instalación.","Una acción para negar el uso de una vía de comunicación.","Un fuego de hostigamiento a distancia."],a:1,
+ e:"Art 7.005. La opción A es la definición de emboscada (Art 7.010)."},
+{s:R+" · Cap VII",q:"En el golpe de mano, el equipo eliminación de centinelas:",
+ o:["Es uno solo para todos los centinelas.","Se prevé uno por cada centinela a neutralizar, formado por 2 o 3 hombres.","Está integrado por tiradores especiales a distancia.","Actúa después del equipo asalto."],a:1,
+ e:"Art 7.007 a 1): habitualmente un solo hombre ejecuta el ataque, pero el equipo debe tener 2 o 3 hombres (eliminador y protector)."},
+{s:R+" · Cap VII",q:"Para el equipo demoliciones del golpe de mano, el ROP indica preparar por cada carga:",
+ o:["Un único sistema de ignición eléctrico.","Dos o más sistemas de ignición rápidos, ya que el medio acuático es propicio para que un circuito falle.","Solo mecha lenta.","Ningún sistema de ignición hasta llegar al objetivo."],a:1,
+ e:"Art 7.007 a 3): el factor más importante a tener en cuenta es la rapidez."},
+{s:R+" · Cap VII",q:"En la emboscada acuática, a diferencia de la terrestre, el escalón asalto:",
+ o:["Asalta siempre la zona de muerte inmediatamente.","Preferentemente no asalta por el riesgo de exponerse anticipadamente; la acción principal se efectúa por el fuego y voladuras.","Se ubica en la retaguardia como reserva.","Solo da alerta temprana."],a:1,
+ e:"Art 7.013 c."},
+{s:R+" · Cap VII",q:"La \"emboscada india\" consiste en:",
+ o:["Reemplazar el personal por minas y trampas accionadas a distancia.","Un dispositivo lineal sumergido bajo el pelo de agua (o enmascarado en la orilla) desde donde los buzos emergen ejecutando un golpe de fuego al llegar el enemigo a la zona de muerte.","Varias emboscadas de punto interrelacionadas.","Una emboscada en forma de L."],a:1,
+ e:"Art 7.016 c 1): se emplea para una emboscada de punto en zona descubierta. La opción A es la emboscada explosiva."},
+{s:R+" · Cap VII",q:"Una emboscada de ZONA es aquella en la que:",
+ o:["Los elementos se despliegan para atacar en una sola zona de muerte.","Los elementos se despliegan para atacar en varias zonas de muerte, mediante varias emboscadas de punto interrelacionadas.","Se emplean exclusivamente explosivos.","Solo se hostiga con una pareja."],a:1,
+ e:"Art 7.015 b."},
+{s:R+" · Cap VII",q:"¿Cuál es el factor DETERMINANTE de éxito de una emboscada?",
+ o:["El volumen de fuego.","La sorpresa.","La elección del terreno.","El control."],a:1,
+ e:"Art 7.017 b: la sorpresa es el factor determinante y se alcanza mediante un plan detallado y previamente ensayado."},
+{s:R+" · Cap VIII",q:"La interdicción es una operación complementaria por medio de la cual se busca:",
+ o:["Negar o impedir al enemigo el uso de áreas o vías de comunicación.","Colocar un elemento propio en territorio enemigo.","Recuperar material hundido.","Obtener información del enemigo."],a:0,
+ e:"Art 8.001. Se materializa por barreras, fuegos y acciones ofensivas de elementos de combate (Art 8.002)."},
+{s:R+" · Cap VIII",q:"¿Cuál es la característica distintiva del Bloqueo de Vías de Comunicación (BVC)?",
+ o:["La retención permanente del terreno.","La defensa de un punto o zona del terreno por un tiempo determinado.","La destrucción total del enemigo.","La ausencia de obstáculos."],a:1,
+ e:"Art 8.004: generalmente se ejecuta en el dispositivo enemigo y la posición no podrá sostenerse por períodos prolongados."},
+{s:R+" · Cap VIII",q:"En el BVC, el efecto que obliga al enemigo a cambiar su formación y rendimiento de avance se denomina:",
+ o:["Canalización.","Retardante.","Detención.","De ruptura."],a:3,
+ e:"Art 8.005 b: ruptura (cambia formación y rendimiento), canalización (sale de su eje), retardante (disminuye el ritmo) y detención (niega el acceso)."},
+{s:R+" · Cap VIII",q:"Para NEGAR al enemigo las facilidades existentes en las vías de navegación se procederá a:",
+ o:["Instalar puestos observatorios en la costa propia.","Retirar embarcaciones, combustibles y lubricantes, inutilizar astilleros y talleres, destruir muelles y escolleras e inutilizar las señales para la navegación.","Construir nuevos muelles.","Solicitar apoyo aéreo cercano."],a:1,
+ e:"Art 8.005 c 8)."},
+{s:R+" · Cap XII",q:"Por el brillo de su cristal, ¿qué debe hacer el buzo con el visor al iniciar la aproximación cercana por superficie?",
+ o:["Cubrirlo con crema de enmascaramiento.","Quitárselo.","Bajarlo al cuello sin quitarlo.","Mantenerlo puesto con una funda."],a:1,
+ e:"Art 12.003 b: el visor genera un brillo fácilmente distinguible, lo que impone que se lo quiten al iniciar la aproximación cercana por superficie."},
+{s:R+" · Cap XII",q:"El \"camalotero\" es:",
+ o:["Un tipo de bote neumático para ríos.","Un enmascaramiento de tres varillas unidas y cubiertas por una red con camalotes, dentro del cual navegan los buzos usándolo también como flotador.","Una técnica de búsqueda subacua.","Un tipo de trampa explosiva flotante."],a:1,
+ e:"Art 12.003 a."},
+{s:R+" · Cap XII",q:"En combate se emplean botes neumáticos de 800 o 1000 kg. ¿Cuántos hombres componen normalmente su tripulación?",
+ o:["3 hombres.","5 hombres, eventualmente 7.","10 hombres.","2 hombres."],a:1,
+ e:"Art 12.004 a 2): patrón o motorista, popel o auxiliar y el pasaje, numerados de proa a popa."},
+{s:R+" · Cap XII",q:"El tipo de movimiento empleado cuando el contacto con el enemigo parece probable, pero no seguro, es:",
+ o:["Marcha continua.","Marcha vigilada.","Avance por saltos.","Alto horario."],a:1,
+ e:"Art 12.006 b: continua (contacto no probable), vigilada (probable pero no seguro), por saltos (probable y parece seguro)."},
+{s:R+" · Cap XII",q:"El lanzamiento al agua desde aeronave SIN paracaídas solo se efectúa desde helicóptero a:",
+ o:["10 a 15 m de altura y hasta 20 km/h.","4 a 6 m de altura y una velocidad no mayor a 4 km/h (1 m/s o 2 nudos).","1 a 2 m de altura, en estacionario.","20 m de altura y 10 nudos."],a:1,
+ e:"Art 12.008 k 3) a)."},
+
+/* ===== RFP 64-01 ===== */
+{s:F+" · Cap II",q:"¿Cuál es la presión ABSOLUTA a 20 m de profundidad?",
+ o:["1 atm.","2 atm.","3 atm.","4 atm."],a:2,
+ e:"Presión relativa 2 atm + presión atmosférica 1 atm = 3 atm absolutas (Art 2.011)."},
+{s:F+" · Cap II",q:"¿Qué ley explica que una botella cargada dejada al sol aumente peligrosamente su presión interior?",
+ o:["Ley de Boyle-Mariotte.","Ley de Charles Gay-Lussac.","Ley de Henry.","Principio de Arquímedes."],a:1,
+ e:"Art 2.014: a volumen constante, la presión de un gas es directamente proporcional a la temperatura. Por eso nunca se dejan las botellas expuestas al sol."},
+{s:F+" · Cap II",q:"¿Qué ley explica la absorción de nitrógeno en los tejidos del buzo a medida que aumenta la profundidad?",
+ o:["Ley de Henry.","Ley de Graham.","Principio de Pascal.","Ley de Charles Gay-Lussac."],a:0,
+ e:"Art 2.015: a temperatura constante, la masa de gas disuelta en un líquido es proporcional a la presión parcial del gas."},
+{s:F+" · Cap II",q:"Respirando aire, ¿cuál es aproximadamente la presión parcial de oxígeno a 40 m (5 ATA)?",
+ o:["0,21 ATA.","0,63 ATA.","1,05 ATA.","3,90 ATA."],a:2,
+ e:"Ley de Dalton: 0,21 × 5 = 1,05 ATA. (3,90 ATA es la presión parcial de N₂ a esa profundidad.)"},
+{s:F+" · Cap II",q:"Un objeto pesa 15 kg y desaloja 10 dm³ de agua. ¿Qué flotabilidad y peso aparente tendrá?",
+ o:["Positiva, 5 kg.","Negativa, 5 kg.","Neutra, 0 kg.","Negativa, 15 kg."],a:1,
+ e:"Principio de Arquímedes: empuje = 10 kg; peso 15 kg > empuje → flotabilidad negativa con peso aparente de 5 kg."},
+{s:F+" · Cap II",q:"A 0 °C, ¿a qué velocidad aproximada se propaga el sonido en el agua?",
+ o:["333 m/s.","800 m/s.","1.400 m/s.","3.000 m/s."],a:2,
+ e:"Art 2.019: ~1.400 m/s en el agua contra 333 m/s en el aire; por eso el buzo no logra determinar de dónde viene el sonido."},
+{s:F+" · Cap II",q:"Por absorción cualitativa de la luz en el agua, ¿cuáles son los primeros colores en desaparecer con la profundidad?",
+ o:["Los fríos, comenzando por el azul.","Los cálidos, comenzando por el rojo.","El verde y el violeta.","Todos desaparecen a la vez."],a:1,
+ e:"Art 2.024 b: el agua actúa como filtro selectivo; primero desaparecen los colores cálidos (rojo) y luego los fríos."},
+{s:F+" · Cap III",q:"¿Cuál de los siguientes elementos NO integra el equipo básico de buceo?",
+ o:["Visor o luneta.","Snorkel.","Cinturón de lastre.","Chaleco compensador."],a:3,
+ e:"Art 3.001: visor, aletas, snorkel, cinturón de lastre y cuchillo. El chaleco compensador es un accesorio (Art 3.007)."},
+{s:F+" · Cap III",q:"¿Qué diámetro y longitud debe tener el snorkel según el RFP?",
+ o:["10 a 12 mm y 50 cm.","18 a 25 mm y 30 a 35 cm.","30 mm y 60 cm.","15 mm y 20 cm."],a:1,
+ e:"Art 3.004: el diámetro no debe frenar la respiración (18–25 mm) y el extremo debe sobresalir del agua (30–35 cm)."},
+{s:F+" · Cap III",q:"La válvula J (de reserva constante) corta el suministro cuando la presión del botellón desciende a:",
+ o:["5 a 10 kg/cm².","20 a 40 kg/cm² (regulable).","100 kg/cm².","200 kg/cm²."],a:1,
+ e:"Art 3.043 b: el resorte se regula de 20 a 40 kg/cm²; para liberar la reserva se acciona la varilla. La válvula K no tiene reserva."},
+{s:F+" · Cap III",q:"¿Cuál es la primera parte del equipo que el buzo debe vestir?",
+ o:["El cinturón de lastre.","El chaleco compensador.","El botellón.","Las aletas."],a:1,
+ e:"Art 3.022: sobre el chaleco se colocan los demás componentes. El cinturón de lastre va por encima de todos los arneses (Art 3.005)."},
+{s:F+" · Cap III",q:"En un equipo de circuito SEMICERRADO, ¿qué porcentaje del gas provisto se libera al exterior?",
+ o:["0 %.","7 a 10 %.","50 %.","100 %."],a:1,
+ e:"Art 3.036 c: el resto se purifica dentro del equipo. Circuito abierto libera todo; circuito cerrado no tiene escape al exterior."},
+{s:F+" · Cap III",q:"El cartucho del OXIGERS 57 contiene unos 1500 g de cal sodada. ¿Durante cuánto tiempo asegura la fijación de CO₂ en uso continuo?",
+ o:["30 minutos.","1 hora.","3 horas.","12 horas."],a:2,
+ e:"Art 3.055: 3 h de uso continuo (CO₂ 1 %)."},
+{s:F+" · Cap III",q:"¿Cada cuánto debe realizarse la inspección hidrostática de un botellón de ACERO según el RFP?",
+ o:["Cada año.","Cada 3 años.","Cada 5 años.","Cada 10 años."],a:1,
+ e:"Art 3.042: acero cada 3 años; aluminio cada 5 años."},
+{s:F+" · Cap IV",q:"En apnea, ¿qué provoca el \"desmayo de poca profundidad\"?",
+ o:["Exceso de nitrógeno disuelto.","La hiperventilación previa, que reduce el CO₂, retarda el deseo de respirar y permite consumir casi todo el oxígeno.","El frío del agua.","La ruptura del tímpano."],a:1,
+ e:"Art 4.019 i: con circuito cerrado de O₂ el mecanismo es distinto (no desenchupetar hasta estar en lugar seguro)."},
+{s:F+" · Cap IV",q:"¿Qué signo característico presenta el intoxicado por monóxido de carbono (CO)?",
+ o:["Color azulado (cianosis) generalizado.","Color rojo cereza en uñas y mucosas.","Piel marmórea.","Piel crepitante al tacto."],a:1,
+ e:"Art 4.020 c: el CO tiene ~200 veces más afinidad por la hemoglobina que el O₂. Se previene alejando la toma de aire del compresor de los escapes."},
+{s:F+" · Cap IV",q:"¿Cuál es la causa del barotraumatismo intestinal (cólico del escafandrista)?",
+ o:["Comidas copiosas, bebidas gaseosas o tragar aire antes o durante el buceo; el gas se expande al ascender.","La intoxicación por CO₂.","El frío del agua.","La hiperventilación."],a:0,
+ e:"Art 4.021 d: dolor tipo cólico durante el ascenso o en superficie, frecuentemente en la zona superior izquierda del abdomen."},
+{s:F+" · Cap IV",q:"Respecto de la embolia gaseosa, es correcto que:",
+ o:["Los síntomas suelen aparecer a las 12 horas del buceo.","Los síntomas son generalmente bruscos, antes de los 5 minutos de emergido, y se debe recomprimir a 50 m (165 pies) lo antes posible.","No requiere recompresión.","Se trata con tabla 1A."],a:1,
+ e:"Art 4.021 g: recomprimir a 50 m usando tabla 3, 4 o 6A según disponibilidad de oxígeno."},
+{s:F+" · Cap IV",q:"En la Enfermedad de la Descompresión, ¿qué proporción de casos manifiesta síntomas dentro de la primera hora y dentro de las 6 horas?",
+ o:["10 % y 50 %.","50 % y 90 %.","90 % y 100 %.","25 % y 75 %."],a:1,
+ e:"Art 4.021 h 2). Los bends son el síntoma más común y el hombro la articulación más afectada."},
+{s:F+" · Cap IV",q:"La hipotermia se define como una temperatura central menor de:",
+ o:["37 °C.","36 °C.","35 °C.","32 °C."],a:2,
+ e:"Art 4.022 c. En el agua se pierde calor unas 25 veces más rápido que en el aire."},
+{s:F+" · Cap IV",q:"Ante una convulsión por intoxicación de oxígeno, ¿qué NO se debe hacer?",
+ o:["Sacar al buzo del agua.","Intentar detener la convulsión una vez iniciada.","Verificar si tragó o inhaló agua.","Consultar al oficial médico."],a:1,
+ e:"Art 4.020 a 4): no intentar detener la convulsión; evitar que se lastime. Si fue llevado de urgencia a superficie, considerar la recompresión."},
+{s:F+" · Cap V",q:"Según el RFP, un buceo REPETIDO es todo buceo efectuado:",
+ o:["Antes de los 10 minutos de intervalo en superficie.","Después de los 10 minutos y antes de 12 horas de intervalo en superficie.","Después de 12 horas de intervalo.","Después de 24 horas."],a:1,
+ e:"Art 5.008 f. Buceo simple: después de 12 h de intervalo."},
+{s:F+" · Cap V",q:"Si la profundidad del buceo no está especificada en la tabla, ¿qué se debe hacer?",
+ o:["Interpolar entre las dos profundidades más cercanas.","Tomar la profundidad inmediata superior (más profunda).","Tomar la profundidad inmediata inferior.","Usar la tabla sin descompresión."],a:1,
+ e:"Art 5.009: igual con el tiempo (tomar el inmediato superior). NUNCA se debe interpolar."},
+{s:F+" · Cap V",q:"Según el RFP 64-01, ¿cuál es la velocidad de ascenso normal en las tablas de descompresión con aire?",
+ o:["9 m/min.","18 m/min.","25 m/min.","7,5 m/min."],a:1,
+ e:"Art 5.009 b: 18 m/min (excepción: descompresión en superficie con O₂, 7,5 m/min). Atención: la Rev 7 de la U.S. Navy fija 9 m/min (30 pies/min)."},
+{s:F+" · Cap V",q:"El tiempo de permanencia en cada etapa de descompresión se cuenta:",
+ o:["Desde que se abandona el fondo.","Desde el arribo a cada etapa; el tiempo de ascenso NO se cuenta como parte de la etapa.","Incluyendo el tiempo de ascenso entre etapas.","Desde que se abandona la etapa anterior."],a:1,
+ e:"Art 5.009 c."},
+{s:F+" · Cap V",q:"¿Cuál es el principal riesgo en el uso de la cámara de recompresión?",
+ o:["La hipotermia.","El incendio, sobre todo cuando se usa oxígeno (se ventila 1 minuto cada 5 minutos).","La narcosis.","La rotura de la puerta."],a:1,
+ e:"Art 5.006. Medidas ante incendio: llevar la cámara a superficie, retirar ocupantes y recomprimirlos a la presión que tenían (Art 5.007)."},
+{s:F+" · Cap VIII",q:"¿Cuál es el límite de profundidad para utilizar el equipo de circuito cerrado de oxígeno según el Cap VIII?",
+ o:["3 m.","7,5 m.","12 m.","18 m."],a:1,
+ e:"Art 8.001: 7,5 m, no debiendo sobrepasarse salvo que sea imprescindible. (El Cap III indica 7 m como profundidad límite reglamentaria.)"},
+{s:F+" · Cap VIII",q:"La prueba de tolerancia al oxígeno consiste en:",
+ o:["Respirar O₂ puro a 7,5 m durante 75 minutos en el agua.","Una inmersión en cámara de recompresión a 18 m respirando O₂ puro durante 30 minutos.","Respirar O₂ en superficie durante 1 hora.","Bucear a 12 m durante 10 minutos."],a:1,
+ e:"Art 8.001."},
+{s:F+" · Cap VIII",q:"Según la tabla de profundidad y tiempo límite para buceo con oxígeno puro, a 7,5 m el tiempo máximo es:",
+ o:["240 minutos.","150 minutos.","110 minutos.","75 minutos."],a:3,
+ e:"Art 8.003: 3 m → 240 min; 4,5 m → 150 min; 6 m → 110 min; 7,5 m → 75 min. Excepcionales: 9 m → 45; 10,5 m → 25; 12 m → 10 min."},
+{s:F+" · Cap VIII",q:"¿Cuándo debe cambiarse la cal sodada del equipo de circuito cerrado?",
+ o:["Una vez por mes.","Después de 3 horas de uso continuo o 1:30 h de uso intermitente, y obligatoriamente al menos una vez por semana.","Solo cuando se humedece.","Cada 12 horas de uso."],a:1,
+ e:"Art 8.003 c 1) d)."},
+{s:F+" · Cap VIII",q:"Respecto del buceo con circuito abierto, ¿cuánto lastre adicional se usa generalmente con el equipo de circuito cerrado?",
+ o:["Ninguno.","2 a 4 kg más.","6 a 8 kg más.","La mitad."],a:1,
+ e:"Art 8.003 a: depende de la carga que lleve el buzo (armamento, explosivos, etc.)."},
+
+/* ===== U.S. Navy Rev 7 ===== */
+{s:N,q:"Según las tablas U.S. Navy Revisión 7, ¿cuál es la velocidad de ascenso en el buceo con aire?",
+ o:["18 m/min (60 pies/min).","9 m/min (30 pies/min).","25 m/min (75 pies/min).","3 m/min (10 pies/min)."],a:1,
+ e:"La Rev 7 fija 30 fsw/min (~9 m/min). Difiere de los 18 m/min del RFP 64-01, que usa tablas anteriores."},
+{s:N,q:"En la tabla de límites sin descompresión de la U.S. Navy Rev 7, ¿cuál es el límite para 60 pies (18 m)?",
+ o:["40 minutos.","55 minutos.","63 minutos.","100 minutos."],a:2,
+ e:"Rev 7: 60 fsw → 63 min (en tablas antiguas eran 60 min)."},
+{s:N,q:"En la tabla de límites sin descompresión de la U.S. Navy Rev 7, ¿cuál es el límite para 100 pies (30 m)?",
+ o:["15 minutos.","20 minutos.","25 minutos.","35 minutos."],a:2,
+ e:"Rev 7: 100 fsw → 25 min."},
+{s:N,q:"La Tabla de Tratamiento 6 de la U.S. Navy se inicia con el paciente respirando oxígeno a:",
+ o:["30 pies (9 m).","60 pies (18 m).","100 pies (30 m).","165 pies (50 m)."],a:1,
+ e:"TT6: períodos de O₂ a 60 fsw (18 m) con intervalos de aire, luego descompresión a 30 fsw. 165 pies (50 m) corresponde a la TT6A para embolia gaseosa."}
+];
+
+const L = ["A","B","C","D","E"];
+let order = [], answers = {}, finished = false, onlyBad = false;
+const $ = id => document.getElementById(id);
+const shuffle = arr => { const a = arr.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function build(){
+  finished = false; onlyBad = false; answers = {};
+  order = shuffle(QUESTIONS.map((_,i)=>i)).map(qi => ({qi, opts: shuffle(QUESTIONS[qi].o.map((_,k)=>k))}));
+  $("quiz").innerHTML = order.map((it,n) => {
+    const Q = QUESTIONS[it.qi];
+    const opts = it.opts.map((k,p) => `<label class="opt" data-k="${k}"><input type="radio" name="q${n}" value="${k}"><span class="l">${L[p]}.</span><span>${esc(Q.o[k])}</span></label>`).join("");
+    return `<div class="q" id="c${n}"><div class="meta"><span>Pregunta ${n+1} de ${order.length}</span><span>${esc(Q.s)}</span></div><p class="txt">${esc(Q.q)}</p>${opts}<div class="fb"></div></div>`;
+  }).join("");
+  $("quiz").classList.remove("done");
+  $("result").classList.remove("show");
+  $("notice").classList.remove("show");
+  $("finish").classList.remove("hide");
+  $("onlyBad").textContent = "Ver solo incorrectas";
+  progress();
+}
+
+function progress(){
+  const n = Object.keys(answers).length, t = order.length;
+  $("count").textContent = `${n} / ${t}`;
+  $("count2").textContent = `${n} / ${t} respondidas`;
+  $("progbar").style.width = (n/t*100)+"%";
+}
+
+$("quiz").addEventListener("change", e => {
+  if (finished || e.target.type !== "radio") return;
+  const n = +e.target.name.slice(1);
+  answers[n] = +e.target.value;
+  $("c"+n).querySelectorAll(".opt").forEach(o => o.classList.toggle("chosen", o.contains(e.target)));
+  progress();
+});
+
+function grade(){
+  finished = true;
+  $("notice").classList.remove("show");
+  let ok = 0, bad = 0, blank = 0;
+  order.forEach((it,n) => {
+    const Q = QUESTIONS[it.qi], card = $("c"+n), chosen = answers[n];
+    card.querySelectorAll("input").forEach(i => i.disabled = true);
+    card.querySelectorAll(".opt").forEach(o => {
+      const k = +o.dataset.k;
+      o.classList.remove("chosen");
+      if (k === Q.a) o.classList.add("right");
+      else if (k === chosen) o.classList.add("wrong");
+    });
+    const letter = L[it.opts.indexOf(Q.a)];
+    let head;
+    if (chosen === undefined){ blank++; card.classList.add("is-blank"); head = `Sin responder. Correcta: ${letter}`; }
+    else if (chosen === Q.a){ ok++; card.classList.add("is-ok"); head = "Correcta"; }
+    else { bad++; card.classList.add("is-bad"); head = `Incorrecta. Correcta: ${letter}`; }
+    card.querySelector(".fb").innerHTML = `<b>${head}</b>${esc(Q.e)}`;
+  });
+  $("quiz").classList.add("done");
+  const t = order.length;
+  $("score").textContent = `${ok} / ${t}  (${Math.round(ok/t*100)} %)`;
+  $("stats").textContent = `Correctas: ${ok} · Incorrectas: ${bad} · Sin responder: ${blank}`;
+  $("result").classList.add("show");
+  $("finish").classList.add("hide");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+$("finish").addEventListener("click", () => {
+  const left = order.length - Object.keys(answers).length;
+  if (left > 0){
+    $("noticeTxt").textContent = `Te faltan ${left} pregunta${left>1?"s":""} sin responder. Las sin responder cuentan como incorrectas.`;
+    $("notice").classList.add("show");
+    $("notice").scrollIntoView({behavior:"smooth",block:"center"});
+  } else grade();
+});
+$("forceFinish").addEventListener("click", grade);
+$("keepGoing").addEventListener("click", () => {
+  $("notice").classList.remove("show");
+  const first = order.findIndex((_,n) => answers[n] === undefined);
+  if (first >= 0) $("c"+first).scrollIntoView({behavior:"smooth",block:"center"});
+});
+$("onlyBad").addEventListener("click", () => {
+  onlyBad = !onlyBad;
+  document.querySelectorAll(".q.is-ok").forEach(c => c.classList.toggle("hide", onlyBad));
+  $("onlyBad").textContent = onlyBad ? "Ver todas" : "Ver solo incorrectas";
+});
+$("retry").addEventListener("click", () => { build(); window.scrollTo({top:0}); });
+
+build();
+</script>
+</body>
+</html>
